@@ -1,4 +1,5 @@
 import { useSquad, validateFormation } from '@/hooks/useSquad'
+import { useDeadlines } from '@/hooks/useDeadlines'
 import { FormationView } from './FormationView'
 import { PlayerCard } from './PlayerCard'
 
@@ -13,6 +14,7 @@ export function SquadManager() {
     setCaptain,
     setViceCaptain,
   } = useSquad()
+  const { isLineupLocked } = useDeadlines()
 
   if (loading) {
     return <div className="py-8 text-center text-muted-foreground">Loading squad...</div>
@@ -49,6 +51,13 @@ export function SquadManager() {
         <StatCard label="Squad Size" value={`${squad.length}/21`} />
       </div>
 
+      {/* Lineup lock banner */}
+      {isLineupLocked && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          Lineup is locked. Changes will apply to the next matchday.
+        </div>
+      )}
+
       {/* Formation error */}
       {formationError && starters.length > 0 && (
         <div className="rounded-lg border border-destructive/50 bg-destructive/5 px-3 py-2 text-sm text-destructive">
@@ -67,9 +76,9 @@ export function SquadManager() {
             <PlayerCard
               key={sp.id}
               squadPlayer={sp}
-              onToggleStarter={() => toggleStarter(sp.id, false)}
-              onSetCaptain={() => setCaptain(sp.id)}
-              onSetViceCaptain={() => setViceCaptain(sp.id)}
+              onToggleStarter={isLineupLocked ? undefined : () => toggleStarter(sp.id, false)}
+              onSetCaptain={isLineupLocked ? undefined : () => setCaptain(sp.id)}
+              onSetViceCaptain={isLineupLocked ? undefined : () => setViceCaptain(sp.id)}
             />
           ))}
         </div>
@@ -83,7 +92,7 @@ export function SquadManager() {
             <PlayerCard
               key={sp.id}
               squadPlayer={sp}
-              onToggleStarter={() => toggleStarter(sp.id, true)}
+              onToggleStarter={isLineupLocked ? undefined : () => toggleStarter(sp.id, true)}
             />
           ))}
         </div>

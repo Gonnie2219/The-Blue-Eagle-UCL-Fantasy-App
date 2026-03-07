@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useTrades } from '@/hooks/useTrades'
+import { useDeadlines } from '@/hooks/useDeadlines'
 import { TradeCard } from '@/components/trades/TradeCard'
 import { NewTradeForm } from '@/components/trades/NewTradeForm'
 import { TransferPanel } from '@/components/trades/TransferPanel'
@@ -12,6 +13,7 @@ export default function Trades() {
   const { user } = useAuth()
   const [tab, setTab] = useState<Tab>('incoming')
   const { incoming, outgoing, allUsers, loading, submitting, proposeTrade, respondToTrade } = useTrades()
+  const { isTradeOpen } = useDeadlines()
 
   const tabs: { id: Tab; label: string; count?: number }[] = [
     { id: 'incoming', label: 'Incoming', count: incoming.length },
@@ -50,6 +52,13 @@ export default function Trades() {
         ))}
       </div>
 
+      {/* Deadline banner */}
+      {!isTradeOpen && (
+        <div className="rounded-lg border border-destructive/50 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          Trade & transfer window is closed. Changes locked until after the matchday.
+        </div>
+      )}
+
       {/* Tab content */}
       {loading ? (
         <div className="py-8 text-center text-muted-foreground">Loading...</div>
@@ -67,8 +76,8 @@ export default function Trades() {
                     key={trade.id}
                     trade={trade}
                     currentUserId={user!.id}
-                    onAccept={() => respondToTrade(trade.id, true)}
-                    onReject={() => respondToTrade(trade.id, false)}
+                    onAccept={isTradeOpen ? () => respondToTrade(trade.id, true) : undefined}
+                    onReject={isTradeOpen ? () => respondToTrade(trade.id, false) : undefined}
                     submitting={submitting}
                   />
                 ))
@@ -95,14 +104,26 @@ export default function Trades() {
           )}
 
           {tab === 'new' && (
-            <NewTradeForm
-              users={allUsers}
-              onPropose={proposeTrade}
-              submitting={submitting}
-            />
+            isTradeOpen ? (
+              <NewTradeForm
+                users={allUsers}
+                onPropose={proposeTrade}
+                submitting={submitting}
+              />
+            ) : (
+              <div className="rounded-lg border bg-card p-6 text-center">
+                <p className="text-muted-foreground">Trade window is closed.</p>
+              </div>
+            )
           )}
 
-          {tab === 'transfers' && <TransferPanel />}
+          {tab === 'transfers' && (
+            isTradeOpen ? <TransferPanel /> : (
+              <div className="rounded-lg border bg-card p-6 text-center">
+                <p className="text-muted-foreground">Transfer window is closed.</p>
+              </div>
+            )
+          )}
         </>
       )}
     </div>
