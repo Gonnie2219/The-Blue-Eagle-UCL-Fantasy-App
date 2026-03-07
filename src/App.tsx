@@ -6,6 +6,7 @@ import MyTeam from '@/pages/MyTeam'
 import Draft from '@/pages/Draft'
 import Trades from '@/pages/Trades'
 import Live from '@/pages/Live'
+import Leaderboard from '@/pages/Leaderboard'
 import Admin from '@/pages/Admin'
 import type { ReactNode } from 'react'
 
@@ -31,6 +32,7 @@ function AppRoutes() {
         <Route path="/draft" element={<Draft />} />
         <Route path="/trades" element={<Trades />} />
         <Route path="/live" element={<Live />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/admin" element={<Admin />} />
       </Route>
     </Routes>

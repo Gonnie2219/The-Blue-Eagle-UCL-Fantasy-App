@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Users, ShoppingCart, ArrowLeftRight, Radio, Shield } from 'lucide-react'
+import { Users, ShoppingCart, ArrowLeftRight, Radio, Trophy, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase'
@@ -10,6 +10,7 @@ const navItems = [
   { to: '/draft', label: 'Draft', icon: ShoppingCart },
   { to: '/trades', label: 'Trades', icon: ArrowLeftRight },
   { to: '/live', label: 'Live', icon: Radio },
+  { to: '/leaderboard', label: 'League', icon: Trophy },
 ]
 
 const adminItem = { to: '/admin', label: 'Admin', icon: Shield }
