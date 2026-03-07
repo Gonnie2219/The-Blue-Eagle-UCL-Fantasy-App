@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(export:*)"
+      "Bash(export:*)",
+      "Bash(\"C:/Users/gonni/ClaudeCode/TheBlueEagle/.gitignore\":*)",
+      "Bash(npx tsc:*)",
+      "Bash(\"/c/Program Files/nodejs/npx\" tsc:*)",
+      "Bash(\"/c/Program Files/nodejs/npx.cmd\" tsc:*)"
     ]
   }
 }
