@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -17,7 +18,11 @@ export default function Login() {
     setError('')
 
     const { error } = isSignUp
-      ? await supabase.auth.signUp({ email, password })
+      ? await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { display_name: displayName.trim() || undefined } },
+        })
       : await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
@@ -38,6 +43,16 @@ export default function Login() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {isSignUp && (
+            <input
+              type="text"
+              placeholder="Display Name"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              required
+              className="w-full rounded-lg border bg-card px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          )}
           <input
             type="email"
             placeholder="Email"
