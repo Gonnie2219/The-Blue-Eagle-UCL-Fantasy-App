@@ -2,16 +2,6 @@
 -- Run this in the Supabase SQL Editor
 
 -- ============================================================
--- HELPER: check if current user is admin
--- ============================================================
-create or replace function is_admin()
-returns boolean as $$
-  select exists (
-    select 1 from profiles where id = auth.uid() and is_admin = true
-  );
-$$ language sql security definer stable;
-
--- ============================================================
 -- PROFILES (extends Supabase auth.users)
 -- ============================================================
 create table profiles (
@@ -25,9 +15,21 @@ create table profiles (
 
 alter table profiles enable row level security;
 create policy "Users can read all profiles" on profiles for select using (true);
+create policy "Users can insert own profile" on profiles for insert
+  with check (auth.uid() = id);
 create policy "Users can update own profile" on profiles for update
   using (auth.uid() = id)
   with check (auth.uid() = id and is_admin = (select p.is_admin from profiles p where p.id = auth.uid()));
+
+-- ============================================================
+-- HELPER: check if current user is admin
+-- ============================================================
+create or replace function is_admin()
+returns boolean as $$
+  select exists (
+    select 1 from profiles where id = auth.uid() and is_admin = true
+  );
+$$ language sql security definer stable;
 
 -- Auto-create profile on signup
 create or replace function handle_new_user()
@@ -37,7 +39,7 @@ begin
   values (new.id, coalesce(new.raw_user_meta_data->>'display_name', split_part(new.email, '@', 1)));
   return new;
 end;
-$$ language plpgsql security definer;
+$$ language plpgsql security definer set search_path = public;
 
 create trigger on_auth_user_created
   after insert on auth.users
