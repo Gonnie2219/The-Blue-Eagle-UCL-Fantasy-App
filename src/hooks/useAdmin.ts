@@ -137,16 +137,19 @@ export function useMatchdayAdmin() {
 export function useScoreAdmin() {
   const [scores, setScores] = useState<PlayerScore[]>([])
   const [matchdays, setMatchdays] = useState<Matchday[]>([])
+  const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [scoresRes, mdRes] = await Promise.all([
+    const [scoresRes, mdRes, matchRes] = await Promise.all([
       supabase.from('player_scores').select('*, player:players(*, club:clubs(*))').order('total_points', { ascending: false }),
       supabase.from('matchdays').select('*').order('first_kickoff', { ascending: true }),
+      supabase.from('matches').select('*, home_club:clubs!home_club_id(*), away_club:clubs!away_club_id(*)').order('kickoff_at'),
     ])
     setScores(scoresRes.data ?? [])
     setMatchdays(mdRes.data ?? [])
+    setMatches(matchRes.data ?? [])
     setLoading(false)
   }, [])
 
@@ -160,8 +163,39 @@ export function useScoreAdmin() {
     load()
   }, [load])
 
+  const generateScoresForMatch = useCallback(async (matchId: number, matchdayId: number, homeClubId: number, awayClubId: number) => {
+    // Get all players from both clubs
+    const { data: players } = await supabase
+      .from('players')
+      .select('id')
+      .in('club_id', [homeClubId, awayClubId])
+      .eq('is_available', true)
+
+    if (!players?.length) return
+
+    // Check which players already have scores for this match
+    const { data: existing } = await supabase
+      .from('player_scores')
+      .select('player_id')
+      .eq('match_id', matchId)
+
+    const existingIds = new Set((existing ?? []).map((e) => e.player_id))
+    const newPlayers = players.filter((p) => !existingIds.has(p.id))
+
+    if (newPlayers.length === 0) return
+
+    await supabase.from('player_scores').insert(
+      newPlayers.map((p) => ({
+        player_id: p.id,
+        matchday_id: matchdayId,
+        match_id: matchId,
+      }))
+    )
+    load()
+  }, [load])
+
   useEffect(() => { load() }, [load])
-  return { scores, matchdays, loading, updateScore, recalcPoints, reload: load }
+  return { scores, matchdays, matches, loading, updateScore, recalcPoints, generateScoresForMatch, reload: load }
 }
 
 // ---- Player/Club Management ----
