@@ -78,7 +78,7 @@ export function useMatchdayAdmin() {
   const load = useCallback(async () => {
     setLoading(true)
     const [mdRes, matchRes, clubRes] = await Promise.all([
-      supabase.from('matchdays').select('*').order('first_kickoff', { ascending: false }),
+      supabase.from('matchdays').select('*').order('first_kickoff', { ascending: true }),
       supabase.from('matches').select('*, home_club:clubs!home_club_id(*), away_club:clubs!away_club_id(*)').order('kickoff_at'),
       supabase.from('clubs').select('*').order('name'),
     ])
@@ -143,7 +143,7 @@ export function useScoreAdmin() {
     setLoading(true)
     const [scoresRes, mdRes] = await Promise.all([
       supabase.from('player_scores').select('*, player:players(*, club:clubs(*))').order('total_points', { ascending: false }),
-      supabase.from('matchdays').select('*').order('first_kickoff', { ascending: false }),
+      supabase.from('matchdays').select('*').order('first_kickoff', { ascending: true }),
     ])
     setScores(scoresRes.data ?? [])
     setMatchdays(mdRes.data ?? [])
