@@ -3,11 +3,14 @@ import { BottomNav } from './BottomNav'
 import { useAuth } from '@/contexts/AuthContext'
 import { PlayerStatsProvider } from '@/contexts/PlayerStatsContext'
 import { PlayerStatsModal } from '@/components/player/PlayerStatsModal'
+import { UserSquadProvider } from '@/contexts/UserSquadContext'
+import { UserSquadModal } from '@/components/player/UserSquadModal'
 
 export function AppLayout() {
   const { user, profile, signOut } = useAuth()
 
   return (
+    <UserSquadProvider>
     <PlayerStatsProvider>
     <div className="min-h-screen bg-background pb-16">
       <header className="sticky top-0 z-40 border-b bg-primary text-primary-foreground">
@@ -37,7 +40,9 @@ export function AppLayout() {
       </main>
       <BottomNav />
       <PlayerStatsModal />
+      <UserSquadModal />
     </div>
     </PlayerStatsProvider>
+    </UserSquadProvider>
   )
 }

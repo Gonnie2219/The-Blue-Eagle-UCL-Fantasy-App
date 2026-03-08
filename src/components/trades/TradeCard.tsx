@@ -2,6 +2,7 @@ import { ArrowRightLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { posColors } from '@/lib/constants'
 import { usePlayerStats } from '@/contexts/PlayerStatsContext'
+import { useUserSquad } from '@/contexts/UserSquadContext'
 import { formatDistanceToNow } from 'date-fns'
 import type { Trade } from '@/types'
 
@@ -22,6 +23,7 @@ interface TradeCardProps {
 
 export function TradeCard({ trade, currentUserId, onAccept, onReject, submitting }: TradeCardProps) {
   const { openPlayerStats } = usePlayerStats()
+  const { openUserSquad } = useUserSquad()
   const isIncoming = trade.receiver_id === currentUserId
   const otherUser = isIncoming ? trade.proposer : trade.receiver
   const giving = (trade.trade_players ?? []).filter((tp) => tp.from_user_id === currentUserId)
@@ -31,7 +33,13 @@ export function TradeCard({ trade, currentUserId, onAccept, onReject, submitting
     <div className="rounded-lg border bg-card p-3 space-y-2">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium">
-          {isIncoming ? 'From' : 'To'}: <span className="text-primary">{otherUser?.display_name}</span>
+          {isIncoming ? 'From' : 'To'}:{' '}
+          <span
+            onClick={() => otherUser && openUserSquad(otherUser.id)}
+            className="text-primary underline decoration-primary/30 cursor-pointer"
+          >
+            {otherUser?.display_name}
+          </span>
         </p>
         <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold', statusColors[trade.status])}>
           {trade.status}

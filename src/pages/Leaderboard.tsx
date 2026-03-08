@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
+import { useUserSquad } from '@/contexts/UserSquadContext'
 import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/types'
 
 export default function Leaderboard() {
   const { user } = useAuth()
+  const { openUserSquad } = useUserSquad()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -39,10 +41,11 @@ export default function Leaderboard() {
           const rank = i + 1
           const isMe = p.id === user?.id
           return (
-            <div
+            <button
               key={p.id}
+              onClick={() => openUserSquad(p.id)}
               className={cn(
-                'flex items-center gap-3 rounded-lg border px-4 py-3',
+                'flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left hover:bg-accent/50',
                 isMe ? 'border-primary bg-primary/5' : 'bg-card'
               )}
             >
@@ -65,7 +68,7 @@ export default function Leaderboard() {
               </div>
               <span className="text-lg font-bold text-primary">{p.total_points}</span>
               <span className="text-xs text-muted-foreground">pts</span>
-            </div>
+            </button>
           )
         })}
 
