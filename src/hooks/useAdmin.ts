@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/contexts/AuthContext'
-import type { Profile, DraftSession, Matchday, Match, Player, Club, PlayerScore } from '@/types'
+import type { Profile, DraftSession, Matchday, Match, Player, Club, PlayerScore, SquadPlayer } from '@/types'
 
 export function useAdmin() {
   const { user } = useAuth()
@@ -71,6 +71,20 @@ export function useDraftAdmin() {
   }, [load])
 
   const deleteDraft = useCallback(async (id: number) => {
+    // Get picks to clean up squad_players
+    const { data: picks } = await supabase
+      .from('draft_picks')
+      .select('user_id, player_id')
+      .eq('draft_session_id', id)
+    // Remove drafted players from squads
+    if (picks && picks.length > 0) {
+      for (const pick of picks) {
+        await supabase.from('squad_players').delete()
+          .eq('user_id', pick.user_id)
+          .eq('player_id', pick.player_id)
+      }
+    }
+    // Then delete picks and session
     await supabase.from('draft_picks').delete().eq('draft_session_id', id)
     await supabase.from('draft_sessions').delete().eq('id', id)
     load()
@@ -227,6 +241,39 @@ export function useScoreAdmin() {
 
   useEffect(() => { load() }, [load])
   return { scores, matchdays, matches, loading, updateScore, recalcPoints, generateScoresForMatch, reload: load }
+}
+
+// ---- Squad Management ----
+export function useSquadAdmin() {
+  const [users, setUsers] = useState<Profile[]>([])
+  const [squadPlayers, setSquadPlayers] = useState<(SquadPlayer & { player: Player & { club: Club } })[]>([])
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const loadUsers = useCallback(async () => {
+    setLoading(true)
+    const { data } = await supabase.from('profiles').select('*').order('display_name')
+    setUsers(data ?? [])
+    setLoading(false)
+  }, [])
+
+  const loadSquad = useCallback(async (userId: string) => {
+    setSelectedUserId(userId)
+    const { data } = await supabase
+      .from('squad_players')
+      .select('*, player:players(*, club:clubs(*))')
+      .eq('user_id', userId)
+      .order('player_id')
+    setSquadPlayers(data ?? [])
+  }, [])
+
+  const removeFromSquad = useCallback(async (userId: string, playerId: number) => {
+    await supabase.from('squad_players').delete().eq('user_id', userId).eq('player_id', playerId)
+    if (selectedUserId) loadSquad(selectedUserId)
+  }, [selectedUserId, loadSquad])
+
+  useEffect(() => { loadUsers() }, [loadUsers])
+  return { users, squadPlayers, selectedUserId, loading, loadSquad, removeFromSquad }
 }
 
 // ---- Player/Club Management ----

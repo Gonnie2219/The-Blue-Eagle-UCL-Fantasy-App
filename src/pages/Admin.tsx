@@ -5,8 +5,9 @@ import { DraftManager } from '@/components/admin/DraftManager'
 import { MatchdayManager } from '@/components/admin/MatchdayManager'
 import { ScoreManager } from '@/components/admin/ScoreManager'
 import { PlayerManager } from '@/components/admin/PlayerManager'
+import { SquadAdmin } from '@/components/admin/SquadAdmin'
 
-type Tab = 'draft' | 'matchdays' | 'scores' | 'players'
+type Tab = 'draft' | 'matchdays' | 'scores' | 'players' | 'squads'
 
 export default function Admin() {
   const { isAdmin, loading } = useAdmin()
@@ -40,6 +41,7 @@ export default function Admin() {
     { id: 'matchdays', label: 'Matchdays' },
     { id: 'scores', label: 'Scores' },
     { id: 'players', label: 'Players' },
+    { id: 'squads', label: 'Squads' },
   ]
 
   return (
@@ -67,6 +69,7 @@ export default function Admin() {
       {tab === 'matchdays' && <MatchdayManager />}
       {tab === 'scores' && <ScoreManager />}
       {tab === 'players' && <PlayerManager />}
+      {tab === 'squads' && <SquadAdmin />}
     </div>
   )
 }
