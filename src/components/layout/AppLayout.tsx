@@ -1,11 +1,14 @@
 import { Outlet } from 'react-router-dom'
 import { BottomNav } from './BottomNav'
 import { useAuth } from '@/contexts/AuthContext'
+import { PlayerStatsProvider } from '@/contexts/PlayerStatsContext'
+import { PlayerStatsModal } from '@/components/player/PlayerStatsModal'
 
 export function AppLayout() {
   const { user, profile, signOut } = useAuth()
 
   return (
+    <PlayerStatsProvider>
     <div className="min-h-screen bg-background pb-16">
       <header className="sticky top-0 z-40 border-b bg-primary text-primary-foreground">
         <div className="mx-auto flex h-14 max-w-lg items-center justify-between px-4">
@@ -33,6 +36,8 @@ export function AppLayout() {
         <Outlet />
       </main>
       <BottomNav />
+      <PlayerStatsModal />
     </div>
+    </PlayerStatsProvider>
   )
 }

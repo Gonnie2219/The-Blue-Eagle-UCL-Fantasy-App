@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { posColors } from '@/lib/constants'
+import { usePlayerStats } from '@/contexts/PlayerStatsContext'
 import { useTransfers } from '@/hooks/useTransfers'
 import { useSquad } from '@/hooks/useSquad'
 import type { PlayerPosition } from '@/types'
 
 export function TransferPanel() {
+  const { openPlayerStats } = usePlayerStats()
   const { freeAgents, profile, loading, submitting, makeTransfer } = useTransfers()
   const { squad, reload: reloadSquad } = useSquad()
   const [playerOutId, setPlayerOutId] = useState<number | null>(null)
@@ -61,7 +63,12 @@ export function TransferPanel() {
               <span className={cn('rounded px-1 py-0.5 text-[10px] font-bold', posColors[sp.player?.position ?? ''])}>
                 {sp.player?.position}
               </span>
-              <span className="truncate">{sp.player?.name}</span>
+              <span
+                onClick={(e) => { e.stopPropagation(); if (sp.player) openPlayerStats(sp.player.id) }}
+                className="truncate underline decoration-muted-foreground/30"
+              >
+                {sp.player?.name}
+              </span>
               <span className="ml-auto text-xs text-muted-foreground">{sp.player?.club?.short_name}</span>
             </button>
           ))}
@@ -114,7 +121,7 @@ export function TransferPanel() {
                     key={p.id}
                     className="flex items-center justify-between rounded-md border px-3 py-1.5"
                   >
-                    <div className="flex items-center gap-2 min-w-0">
+                    <button onClick={() => openPlayerStats(p.id)} className="flex items-center gap-2 min-w-0 text-left">
                       <span className={cn('rounded px-1 py-0.5 text-[10px] font-bold', posColors[p.position])}>
                         {p.position}
                       </span>
@@ -122,7 +129,7 @@ export function TransferPanel() {
                         <p className="truncate text-sm">{p.name}</p>
                         <p className="truncate text-xs text-muted-foreground">{p.club?.name}</p>
                       </div>
-                    </div>
+                    </button>
                     <button
                       onClick={() => handleTransfer(p.id)}
                       disabled={submitting}

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { posColors } from '@/lib/constants'
+import { usePlayerStats } from '@/contexts/PlayerStatsContext'
 import type { Player, PlayerPosition } from '@/types'
 
 const positions: (PlayerPosition | 'ALL')[] = ['ALL', 'GK', 'DEF', 'MID', 'FWD']
@@ -14,6 +15,7 @@ interface PlayerPoolProps {
 }
 
 export function PlayerPool({ players, onPick, canPick, picking }: PlayerPoolProps) {
+  const { openPlayerStats } = usePlayerStats()
   const [search, setSearch] = useState('')
   const [posFilter, setPosFilter] = useState<PlayerPosition | 'ALL'>('ALL')
 
@@ -60,7 +62,7 @@ export function PlayerPool({ players, onPick, canPick, picking }: PlayerPoolProp
             key={player.id}
             className="flex items-center justify-between rounded-lg border bg-card px-3 py-2"
           >
-            <div className="flex items-center gap-2 min-w-0">
+            <button onClick={() => openPlayerStats(player.id)} className="flex items-center gap-2 min-w-0 text-left">
               <span className={cn(
                 'rounded px-1.5 py-0.5 text-xs font-bold',
                 posColors[player.position],
@@ -71,7 +73,7 @@ export function PlayerPool({ players, onPick, canPick, picking }: PlayerPoolProp
                 <p className="truncate text-sm font-medium">{player.name}</p>
                 <p className="truncate text-xs text-muted-foreground">{player.club?.name}</p>
               </div>
-            </div>
+            </button>
             {canPick && (
               <button
                 onClick={() => onPick(player.id)}

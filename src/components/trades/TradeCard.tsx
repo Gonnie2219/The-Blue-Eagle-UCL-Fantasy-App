@@ -1,6 +1,7 @@
 import { ArrowRightLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { posColors } from '@/lib/constants'
+import { usePlayerStats } from '@/contexts/PlayerStatsContext'
 import { formatDistanceToNow } from 'date-fns'
 import type { Trade } from '@/types'
 
@@ -20,6 +21,7 @@ interface TradeCardProps {
 }
 
 export function TradeCard({ trade, currentUserId, onAccept, onReject, submitting }: TradeCardProps) {
+  const { openPlayerStats } = usePlayerStats()
   const isIncoming = trade.receiver_id === currentUserId
   const otherUser = isIncoming ? trade.proposer : trade.receiver
   const giving = (trade.trade_players ?? []).filter((tp) => tp.from_user_id === currentUserId)
@@ -41,12 +43,12 @@ export function TradeCard({ trade, currentUserId, onAccept, onReject, submitting
         <div className="flex-1 space-y-1">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase">You give</p>
           {giving.map((tp) => (
-            <div key={tp.id} className="flex items-center gap-1">
+            <button key={tp.id} onClick={() => tp.player && openPlayerStats(tp.player.id)} className="flex items-center gap-1 text-left">
               <span className={cn('rounded px-1 py-0.5 text-[10px] font-bold', posColors[tp.player?.position ?? ''])}>
                 {tp.player?.position}
               </span>
               <span className="text-xs truncate">{tp.player?.name}</span>
-            </div>
+            </button>
           ))}
         </div>
 
@@ -56,12 +58,12 @@ export function TradeCard({ trade, currentUserId, onAccept, onReject, submitting
         <div className="flex-1 space-y-1">
           <p className="text-[10px] font-semibold text-muted-foreground uppercase">You get</p>
           {receiving.map((tp) => (
-            <div key={tp.id} className="flex items-center gap-1">
+            <button key={tp.id} onClick={() => tp.player && openPlayerStats(tp.player.id)} className="flex items-center gap-1 text-left">
               <span className={cn('rounded px-1 py-0.5 text-[10px] font-bold', posColors[tp.player?.position ?? ''])}>
                 {tp.player?.position}
               </span>
               <span className="text-xs truncate">{tp.player?.name}</span>
-            </div>
+            </button>
           ))}
         </div>
       </div>

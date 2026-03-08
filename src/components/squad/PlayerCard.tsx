@@ -1,6 +1,7 @@
 import { Crown, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { posColorsWithBorder as posColors } from '@/lib/constants'
+import { usePlayerStats } from '@/contexts/PlayerStatsContext'
 import type { SquadPlayer } from '@/types'
 
 interface PlayerCardProps {
@@ -18,19 +19,23 @@ export function PlayerCard({
   onSetViceCaptain,
   compact,
 }: PlayerCardProps) {
+  const { openPlayerStats } = usePlayerStats()
   const { player, is_captain, is_vice_captain, is_starter } = squadPlayer
   if (!player) return null
 
   if (compact) {
     return (
-      <div className={cn(
-        'flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs',
-        posColors[player.position]
-      )}>
+      <button
+        onClick={() => openPlayerStats(player.id)}
+        className={cn(
+          'flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs text-left',
+          posColors[player.position]
+        )}
+      >
         {is_captain && <Crown className="h-3 w-3" />}
         {is_vice_captain && <Star className="h-3 w-3" />}
         <span className="truncate font-medium">{player.name}</span>
-      </div>
+      </button>
     )
   }
 
@@ -40,7 +45,7 @@ export function PlayerCard({
       is_captain && 'ring-2 ring-primary',
       is_vice_captain && 'ring-1 ring-primary/50'
     )}>
-      <div className="flex items-center gap-2 min-w-0">
+      <button onClick={() => openPlayerStats(player.id)} className="flex items-center gap-2 min-w-0 text-left">
         <span className={cn('rounded px-1.5 py-0.5 text-xs font-bold', posColors[player.position])}>
           {player.position}
         </span>
@@ -52,7 +57,7 @@ export function PlayerCard({
           </div>
           <p className="truncate text-xs text-muted-foreground">{player.club?.name}</p>
         </div>
-      </div>
+      </button>
 
       <div className="flex shrink-0 gap-1">
         {onSetCaptain && is_starter && !is_captain && (
