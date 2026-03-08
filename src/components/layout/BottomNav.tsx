@@ -18,15 +18,39 @@ const adminItem = { to: '/admin', label: 'Admin', icon: Shield }
 export function BottomNav() {
   const { user } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
+  const [pendingTrades, setPendingTrades] = useState(0)
 
   useEffect(() => {
-    if (!user) { setIsAdmin(false); return }
+    if (!user) { setIsAdmin(false); setPendingTrades(0); return }
     supabase
       .from('profiles')
       .select('is_admin')
       .eq('id', user.id)
       .single()
       .then(({ data }) => setIsAdmin(data?.is_admin ?? false))
+
+    // Check pending incoming trades
+    supabase
+      .from('trades')
+      .select('id', { count: 'exact', head: true })
+      .eq('receiver_id', user.id)
+      .eq('status', 'pending')
+      .then(({ count }) => setPendingTrades(count ?? 0))
+
+    // Subscribe to trade changes
+    const channel = supabase
+      .channel('trade-badges')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'trades' }, () => {
+        supabase
+          .from('trades')
+          .select('id', { count: 'exact', head: true })
+          .eq('receiver_id', user!.id)
+          .eq('status', 'pending')
+          .then(({ count }) => setPendingTrades(count ?? 0))
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
   }, [user])
 
   const items = isAdmin ? [...navItems, adminItem] : navItems
@@ -40,7 +64,7 @@ export function BottomNav() {
             to={item.to}
             className={({ isActive }) =>
               cn(
-                'flex flex-1 flex-col items-center gap-0.5 py-2 text-xs transition-colors',
+                'relative flex flex-1 flex-col items-center gap-0.5 py-2 text-xs transition-colors',
                 isActive
                   ? 'text-primary font-semibold'
                   : 'text-muted-foreground hover:text-foreground'
@@ -49,6 +73,11 @@ export function BottomNav() {
           >
             <item.icon className="h-5 w-5" aria-hidden="true" />
             <span>{item.label}</span>
+            {item.to === '/trades' && pendingTrades > 0 && (
+              <span className="absolute top-1 right-1/4 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-white">
+                {pendingTrades}
+              </span>
+            )}
           </NavLink>
         ))}
       </div>

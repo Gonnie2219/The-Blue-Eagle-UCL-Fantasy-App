@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react'
 import { Outlet } from 'react-router-dom'
+import { Moon, Sun } from 'lucide-react'
 import { BottomNav } from './BottomNav'
 import { useAuth } from '@/contexts/AuthContext'
 import { PlayerStatsProvider } from '@/contexts/PlayerStatsContext'
@@ -8,6 +10,12 @@ import { UserSquadModal } from '@/components/player/UserSquadModal'
 
 export function AppLayout() {
   const { user, profile, signOut } = useAuth()
+  const [dark, setDark] = useState(() => localStorage.getItem('theme') === 'dark')
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark)
+    localStorage.setItem('theme', dark ? 'dark' : 'light')
+  }, [dark])
 
   return (
     <UserSquadProvider>
@@ -19,20 +27,28 @@ export function AppLayout() {
             <h1 className="text-lg font-bold tracking-tight">The Blue Eagle</h1>
             <span className="ml-2 text-sm opacity-80">| העיט הכחול</span>
           </div>
-          {user && (
-            <div className="flex items-center gap-2 text-right">
-              <div className="leading-tight">
-                <p className="text-xs font-bold">{profile?.display_name ?? ''}</p>
-                <p className="text-[10px] opacity-70">{user.email}</p>
-              </div>
-              <button
-                onClick={signOut}
-                className="rounded border border-primary-foreground/30 px-2 py-0.5 text-[10px] opacity-80 hover:opacity-100"
-              >
-                Logout
-              </button>
-            </div>
-          )}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setDark(!dark)}
+              className="rounded p-1 opacity-80 hover:opacity-100"
+            >
+              {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </button>
+            {user && (
+              <>
+                <div className="leading-tight text-right">
+                  <p className="text-xs font-bold">{profile?.display_name ?? ''}</p>
+                  <p className="text-[10px] opacity-70">{user.email}</p>
+                </div>
+                <button
+                  onClick={signOut}
+                  className="rounded border border-primary-foreground/30 px-2 py-0.5 text-[10px] opacity-80 hover:opacity-100"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-lg px-4 py-4">

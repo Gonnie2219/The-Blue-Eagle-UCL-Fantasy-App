@@ -6,10 +6,11 @@ import { LiveMatch } from '@/components/live/LiveMatch'
 import { LiveScoreboard } from '@/components/live/LiveScoreboard'
 import { ManualSubs } from '@/components/live/ManualSubs'
 import { PredictedLineup } from '@/components/live/PredictedLineup'
+import { HeadToHead } from '@/components/live/HeadToHead'
 import { SCORING_TABLE } from '@/lib/scoring'
 import type { Player } from '@/types'
 
-type Tab = 'matches' | 'points' | 'subs' | 'lineups' | 'scoring'
+type Tab = 'matches' | 'points' | 'h2h' | 'subs' | 'lineups' | 'scoring'
 
 export default function Live() {
   const { matchday, matches, scores, squad, manualSubs, loading, makeManualSub } = useLive()
@@ -29,7 +30,8 @@ export default function Live() {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'matches', label: 'Matches' },
-    { id: 'points', label: 'My Points' },
+    { id: 'points', label: 'Points' },
+    { id: 'h2h', label: 'H2H' },
     { id: 'subs', label: 'Subs' },
     { id: 'lineups', label: 'Lineups' },
     { id: 'scoring', label: 'Rules' },
@@ -95,6 +97,10 @@ export default function Live() {
 
           {tab === 'points' && (
             <LiveScoreboard squad={squad} scores={scores} />
+          )}
+
+          {tab === 'h2h' && matchday && (
+            <HeadToHead matchdayId={matchday.id} scores={scores} />
           )}
 
           {tab === 'subs' && (

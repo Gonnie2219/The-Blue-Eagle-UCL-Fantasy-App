@@ -3,12 +3,14 @@ import { Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { posColors } from '@/lib/constants'
 import { usePlayerStats } from '@/contexts/PlayerStatsContext'
+import { usePlayerPoints } from '@/hooks/usePlayerPoints'
 import { useTransfers } from '@/hooks/useTransfers'
 import { useSquad } from '@/hooks/useSquad'
 import type { PlayerPosition } from '@/types'
 
 export function TransferPanel() {
   const { openPlayerStats } = usePlayerStats()
+  const pointsMap = usePlayerPoints()
   const { freeAgents, profile, loading, submitting, makeTransfer } = useTransfers()
   const { squad, reload: reloadSquad } = useSquad()
   const [playerOutId, setPlayerOutId] = useState<number | null>(null)
@@ -130,6 +132,9 @@ export function TransferPanel() {
                         <p className="truncate text-xs text-muted-foreground">{p.club?.name}</p>
                       </div>
                     </button>
+                    <span className="shrink-0 text-xs font-bold text-primary tabular-nums">
+                      {pointsMap.get(p.id) ?? 0}
+                    </span>
                     <button
                       onClick={() => handleTransfer(p.id)}
                       disabled={submitting}

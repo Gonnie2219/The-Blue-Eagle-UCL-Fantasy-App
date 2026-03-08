@@ -73,7 +73,7 @@ export function PlayerStatsModal() {
   const cleanSheets = stats.filter((s) => s.clean_sheet).length
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center">
       <div className="fixed inset-0 bg-black/50" onClick={close} />
       <div className="relative z-10 w-full max-w-lg rounded-t-xl sm:rounded-xl border bg-background shadow-xl max-h-[85vh] flex flex-col">
         {/* Header */}

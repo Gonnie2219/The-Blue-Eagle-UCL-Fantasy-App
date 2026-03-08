@@ -3,6 +3,7 @@ import { Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { posColors } from '@/lib/constants'
 import { usePlayerStats } from '@/contexts/PlayerStatsContext'
+import { usePlayerPoints } from '@/hooks/usePlayerPoints'
 import type { Player, PlayerPosition } from '@/types'
 
 const positions: (PlayerPosition | 'ALL')[] = ['ALL', 'GK', 'DEF', 'MID', 'FWD']
@@ -16,6 +17,7 @@ interface PlayerPoolProps {
 
 export function PlayerPool({ players, onPick, canPick, picking }: PlayerPoolProps) {
   const { openPlayerStats } = usePlayerStats()
+  const pointsMap = usePlayerPoints()
   const [search, setSearch] = useState('')
   const [posFilter, setPosFilter] = useState<PlayerPosition | 'ALL'>('ALL')
 
@@ -74,6 +76,9 @@ export function PlayerPool({ players, onPick, canPick, picking }: PlayerPoolProp
                 <p className="truncate text-xs text-muted-foreground">{player.club?.name}</p>
               </div>
             </button>
+            <span className="shrink-0 text-xs font-bold text-primary tabular-nums">
+              {pointsMap.get(player.id) ?? 0}
+            </span>
             {canPick && (
               <button
                 onClick={() => onPick(player.id)}
