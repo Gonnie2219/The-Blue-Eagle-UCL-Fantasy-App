@@ -64,8 +64,14 @@ export function useDraftAdmin() {
     load()
   }, [load])
 
+  const deleteDraft = useCallback(async (id: number) => {
+    await supabase.from('draft_picks').delete().eq('draft_session_id', id)
+    await supabase.from('draft_sessions').delete().eq('id', id)
+    load()
+  }, [load])
+
   useEffect(() => { load() }, [load])
-  return { sessions, users, loading, createDraft, updateStatus, reload: load }
+  return { sessions, users, loading, createDraft, updateStatus, deleteDraft, reload: load }
 }
 
 // ---- Matchday Management ----

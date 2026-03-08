@@ -21,7 +21,7 @@ export function DraftBoard({ picks, participants }: DraftBoardProps) {
   if (picks.length === 0) {
     return (
       <div className="rounded-lg border bg-card p-4 text-center">
-        <p className="text-sm text-muted-foreground">No picks yet. Waiting for draft to begin...</p>
+        <p className="text-sm text-muted-foreground">No picks yet. The first pick hasn't been made.</p>
       </div>
     )
   }

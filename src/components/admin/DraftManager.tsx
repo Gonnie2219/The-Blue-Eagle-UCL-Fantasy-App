@@ -10,7 +10,7 @@ const statusColors: Record<string, string> = {
 }
 
 export function DraftManager() {
-  const { sessions, users, loading, createDraft, updateStatus } = useDraftAdmin()
+  const { sessions, users, loading, createDraft, updateStatus, deleteDraft } = useDraftAdmin()
   const [showCreate, setShowCreate] = useState(false)
   const [draftType, setDraftType] = useState<'initial' | 'waiver'>('initial')
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
@@ -149,6 +149,17 @@ export function DraftManager() {
                   className="rounded-md bg-gray-500 px-3 py-1 text-xs font-medium text-white"
                 >
                   Complete
+                </button>
+              )}
+              {(s.status === 'pending' || s.status === 'completed') && (
+                <button
+                  onClick={() => {
+                    if (window.confirm(`Delete this draft session and all its picks? This cannot be undone.`))
+                      deleteDraft(s.id)
+                  }}
+                  className="rounded-md bg-red-600 px-3 py-1 text-xs font-medium text-white"
+                >
+                  Delete
                 </button>
               )}
             </div>
