@@ -23,7 +23,13 @@ export function DraftManager() {
 
   const handleCreate = () => {
     if (selectedUsers.length < 2) return
-    createDraft(draftType, selectedUsers)
+    // Fisher-Yates shuffle for random draft order
+    const shuffled = [...selectedUsers]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    createDraft(draftType, shuffled)
     setShowCreate(false)
     setSelectedUsers([])
   }
@@ -64,20 +70,19 @@ export function DraftManager() {
           </div>
 
           <div>
-            <p className="mb-1 text-xs font-semibold">Pick Order (tap to add in order)</p>
+            <p className="mb-1 text-xs font-semibold">Select Participants</p>
             <div className="flex flex-wrap gap-1">
               {users.map((u) => {
-                const idx = selectedUsers.indexOf(u.id)
+                const selected = selectedUsers.includes(u.id)
                 return (
                   <button
                     key={u.id}
                     onClick={() => toggleUser(u.id)}
                     className={cn(
                       'rounded-md px-2.5 py-1 text-xs font-medium transition-colors',
-                      idx >= 0 ? 'bg-primary text-primary-foreground' : 'border hover:bg-accent'
+                      selected ? 'bg-primary text-primary-foreground' : 'border hover:bg-accent'
                     )}
                   >
-                    {idx >= 0 && <span className="mr-1">{idx + 1}.</span>}
                     {u.display_name}
                   </button>
                 )

@@ -108,7 +108,6 @@ export async function fetchUefaMatchStats(
     const awayScore = matchData.score?.total?.away ?? 0
 
     for (const lineup of (lineupData.lineups ?? lineupData ?? []) as UefaLineup[]) {
-      const isHome = true // We'll determine by team code
       const clubId = homeClubId // Will be refined below
 
       for (const lp of (lineup.players ?? []) as UefaLineupPlayer[]) {
