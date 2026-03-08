@@ -86,19 +86,29 @@ export default function History() {
       })
 
     // Calculate per-user points for this matchday
-    // Get all squad_players, then sum their player_scores for this matchday (starters only)
+    // Use squad_snapshots if available, fallback to squad_players
     Promise.all([
       supabase.from('profiles').select('id, display_name'),
       supabase
-        .from('squad_players')
-        .select('user_id, player_id, is_starter, is_captain, is_vice_captain'),
+        .from('squad_snapshots')
+        .select('user_id, player_id, is_starter, is_captain, is_vice_captain')
+        .eq('matchday_id', selectedMd),
       supabase
         .from('player_scores')
         .select('player_id, total_points')
         .eq('matchday_id', selectedMd),
-    ]).then(([profilesRes, squadRes, scoresRes]) => {
+    ]).then(async ([profilesRes, snapshotRes, scoresRes]) => {
       const profiles = profilesRes.data ?? []
-      const squads = squadRes.data ?? []
+      let squads = snapshotRes.data ?? []
+
+      // Fallback to current squads if no snapshots exist for this matchday
+      if (squads.length === 0) {
+        const { data } = await supabase
+          .from('squad_players')
+          .select('user_id, player_id, is_starter, is_captain, is_vice_captain')
+        squads = data ?? []
+      }
+
       const scores = scoresRes.data ?? []
 
       const scoreMap = new Map<number, number>()

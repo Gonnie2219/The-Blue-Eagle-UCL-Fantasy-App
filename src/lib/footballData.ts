@@ -150,6 +150,37 @@ export async function fetchUclFixtures(stage: UclStage): Promise<{
   return { matches: mapped, unmapped: [...new Set(unmapped)] }
 }
 
+/** Fetch UCL match results for a stage (scores only) */
+export async function fetchUclResults(stage: UclStage): Promise<{
+  results: Array<{
+    homeTeamName: string
+    awayTeamName: string
+    homeTla: string
+    awayTla: string
+    homeScore: number
+    awayScore: number
+    status: string
+  }>
+}> {
+  const data = await fdFetch<FdResponse>(
+    `/competitions/CL/matches?stage=${stage}`
+  )
+
+  return {
+    results: data.matches
+      .filter((m) => m.status === 'FINISHED')
+      .map((m) => ({
+        homeTeamName: m.homeTeam.shortName,
+        awayTeamName: m.awayTeam.shortName,
+        homeTla: m.homeTeam.tla,
+        awayTla: m.awayTeam.tla,
+        homeScore: m.score.fullTime.home ?? 0,
+        awayScore: m.score.fullTime.away ?? 0,
+        status: m.status,
+      })),
+  }
+}
+
 /** Fetch UCL league-phase standings */
 export async function fetchUclStandings(): Promise<UclStanding[]> {
   const data = await fdFetch<FdStandingsResponse>('/competitions/CL/standings')

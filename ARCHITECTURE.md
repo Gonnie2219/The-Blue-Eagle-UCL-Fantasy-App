@@ -31,8 +31,13 @@ src/
     live/
       LiveMatch.tsx      -- Match card with score, live indicator, kickoff time
       LiveScoreboard.tsx -- Squad live points breakdown (captain x2, VC takeover)
+      HeadToHead.tsx     -- Side-by-side squad comparison with opponent
+      MatchChat.tsx      -- Real-time matchday chat (Supabase realtime)
       ManualSubs.tsx     -- Tuesday->Wednesday player swap (max 2 per matchday)
       PredictedLineup.tsx-- 2-column predicted XI for upcoming matches
+    player/
+      PlayerStatsModal.tsx -- Match-by-match stats modal (tappable from anywhere)
+      UserSquadModal.tsx   -- View any user's squad + player points
     admin/
       DraftManager.tsx   -- Create/start/pause/complete draft sessions
       MatchdayManager.tsx-- Create matchdays, add matches, set status, auto-timers
@@ -47,18 +52,25 @@ src/
     useTrades.ts         -- Trade CRUD, realtime, accept/reject with squad swap
     useTransfers.ts      -- Free agent transfers, free transfer budget tracking
     useLive.ts           -- Live matchday, matches, scores, manual subs (realtime)
+    useDeadlines.ts      -- Matchday deadline state + 30s tick for countdown timer
+    usePlayerPoints.ts   -- Aggregated season points per player
     useAdmin.ts          -- Admin check + CRUD hooks (draft, matchday, scores, players)
   lib/
     supabase.ts          -- Supabase client initialization
     scoring.ts           -- Point calculation engine + scoring table
     utils.ts             -- Tailwind merge utility (cn)
     constants.ts         -- Shared UI constants (posColors, posColorsWithBorder)
+    footballData.ts      -- football-data.org API (fixture import, result sync, standings)
   pages/
     Login.tsx            -- Auth page (sign in / sign up)
     MyTeam.tsx           -- Squad view via SquadManager
     Draft.tsx            -- Draft room via DraftRoom
     Trades.tsx           -- Trade market (4 tabs: incoming/outgoing/new/transfers)
-    Live.tsx             -- Live matchday (5 tabs: matches/points/subs/lineups/rules)
+    Live.tsx             -- Live matchday (7 tabs: matches/points/h2h/chat/subs/lineups/rules)
+    Leaderboard.tsx      -- League hub (4 tabs: standings/history/stats/activity)
+    History.tsx           -- Completed matchday results + per-user scores (uses snapshots)
+    Stats.tsx             -- Season stats (top players, scorers, assisters)
+    Activity.tsx          -- Draft picks, trades, transfers timeline
     Admin.tsx            -- Admin panel (4 tabs: draft/matchdays/scores/players, admin-only)
   types/
     index.ts             -- All TypeScript interfaces matching DB schema
@@ -85,6 +97,8 @@ supabase/
 | `player_scores` | Per-match scoring breakdown |
 | `transfers` | In-week transfer log (3 free, -3pts extra) |
 | `manual_subs` | Mid-matchday Tuesday-to-Wednesday substitutions |
+| `squad_snapshots` | Frozen squad state per matchday (saved when matchday goes live) |
+| `matchday_messages` | Real-time chat messages per matchday |
 
 ## Auth Flow
 1. User visits app -> AuthContext checks Supabase session

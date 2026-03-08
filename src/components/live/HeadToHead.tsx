@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Crown, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { posColors } from '@/lib/constants'
 import { useAuth } from '@/contexts/AuthContext'
@@ -19,7 +20,6 @@ interface SquadEntry {
 }
 
 interface HeadToHeadProps {
-  matchdayId?: number
   scores: PlayerScore[]
 }
 
@@ -115,29 +115,40 @@ export function HeadToHead({ scores }: HeadToHeadProps) {
             {[
               { label: 'Your XI', squad: mySquad },
               { label: `${oppName}'s XI`, squad: oppSquad },
-            ].map(({ label, squad }) => (
-              <div key={label}>
-                <p className="mb-1 text-[10px] font-semibold text-muted-foreground uppercase">{label}</p>
-                <div className="space-y-0.5">
-                  {squad
-                    .filter((s) => s.is_starter)
-                    .map((sp) => {
-                      const pts = scoreMap.get(sp.player_id) ?? 0
+            ].map(({ label, squad }) => {
+              const starters = squad.filter((s) => s.is_starter)
+              const cap = starters.find((s) => s.is_captain)
+              const capPts = cap ? (scoreMap.get(cap.player_id) ?? 0) : 0
+              const capDNP = capPts === 0
+
+              return (
+                <div key={label}>
+                  <p className="mb-1 text-[10px] font-semibold text-muted-foreground uppercase">{label}</p>
+                  <div className="space-y-0.5">
+                    {starters.map((sp) => {
+                      let pts = scoreMap.get(sp.player_id) ?? 0
+                      const isX2 = (sp.is_captain && !capDNP) || (sp.is_vice_captain && capDNP)
+                      if (isX2) pts *= 2
                       return (
                         <div key={sp.player_id} className="flex items-center justify-between rounded border px-1.5 py-1 text-[11px]">
                           <div className="flex items-center gap-1 min-w-0">
                             <span className={cn('rounded px-0.5 text-[9px] font-bold', posColors[sp.player?.position ?? ''])}>
                               {sp.player?.position}
                             </span>
+                            {sp.is_captain && <Crown className="h-2.5 w-2.5 text-primary shrink-0" />}
+                            {sp.is_vice_captain && <Star className="h-2.5 w-2.5 text-primary shrink-0" />}
                             <span className="truncate">{sp.player?.name}</span>
                           </div>
-                          <span className="font-bold text-primary">{pts}</span>
+                          <span className={cn('font-bold', isX2 ? 'text-primary' : 'text-foreground')}>
+                            {pts}{isX2 && <span className="text-[8px]">x2</span>}
+                          </span>
                         </div>
                       )
                     })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </>
       )}

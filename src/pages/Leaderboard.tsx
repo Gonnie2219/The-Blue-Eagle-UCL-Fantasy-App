@@ -4,8 +4,9 @@ import { LeagueStandings } from '@/components/league/LeagueStandings'
 
 const History = lazy(() => import('./History'))
 const Stats = lazy(() => import('./Stats'))
+const Activity = lazy(() => import('./Activity'))
 
-type Tab = 'standings' | 'history' | 'stats'
+type Tab = 'standings' | 'history' | 'stats' | 'activity'
 
 export default function Leaderboard() {
   const [tab, setTab] = useState<Tab>('standings')
@@ -14,6 +15,7 @@ export default function Leaderboard() {
     { id: 'standings', label: 'Standings' },
     { id: 'history', label: 'History' },
     { id: 'stats', label: 'Stats' },
+    { id: 'activity', label: 'Activity' },
   ]
 
   return (
@@ -41,6 +43,7 @@ export default function Leaderboard() {
         {tab === 'standings' && <LeagueStandings />}
         {tab === 'history' && <History />}
         {tab === 'stats' && <Stats />}
+        {tab === 'activity' && <Activity />}
       </Suspense>
     </div>
   )

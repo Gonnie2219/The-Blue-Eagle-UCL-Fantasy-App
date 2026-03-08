@@ -109,6 +109,25 @@ export function useMatchdayAdmin() {
       updates.waiver_draft_ends_at = new Date(now.getTime() + 48 * 60 * 60 * 1000).toISOString()
       updates.lineup_window_opens_at = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString()
     }
+    // Snapshot all squads when matchday goes live
+    if (status === 'live') {
+      const { data: allSquads } = await supabase
+        .from('squad_players')
+        .select('user_id, player_id, is_starter, is_captain, is_vice_captain')
+      if (allSquads && allSquads.length > 0) {
+        await supabase.from('squad_snapshots').upsert(
+          allSquads.map((sp) => ({
+            matchday_id: id,
+            user_id: sp.user_id,
+            player_id: sp.player_id,
+            is_starter: sp.is_starter,
+            is_captain: sp.is_captain,
+            is_vice_captain: sp.is_vice_captain,
+          })),
+          { onConflict: 'matchday_id,user_id,player_id' }
+        )
+      }
+    }
     await supabase.from('matchdays').update(updates).eq('id', id)
     load()
   }, [load])

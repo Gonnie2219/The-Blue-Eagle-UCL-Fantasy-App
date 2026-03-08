@@ -7,10 +7,11 @@ import { LiveScoreboard } from '@/components/live/LiveScoreboard'
 import { ManualSubs } from '@/components/live/ManualSubs'
 import { PredictedLineup } from '@/components/live/PredictedLineup'
 import { HeadToHead } from '@/components/live/HeadToHead'
+import { MatchChat } from '@/components/live/MatchChat'
 import { SCORING_TABLE } from '@/lib/scoring'
 import type { Player } from '@/types'
 
-type Tab = 'matches' | 'points' | 'h2h' | 'subs' | 'lineups' | 'scoring'
+type Tab = 'matches' | 'points' | 'h2h' | 'chat' | 'subs' | 'lineups' | 'scoring'
 
 export default function Live() {
   const { matchday, matches, scores, squad, manualSubs, loading, makeManualSub } = useLive()
@@ -32,6 +33,7 @@ export default function Live() {
     { id: 'matches', label: 'Matches' },
     { id: 'points', label: 'Points' },
     { id: 'h2h', label: 'H2H' },
+    { id: 'chat', label: 'Chat' },
     { id: 'subs', label: 'Subs' },
     { id: 'lineups', label: 'Lineups' },
     { id: 'scoring', label: 'Rules' },
@@ -100,7 +102,11 @@ export default function Live() {
           )}
 
           {tab === 'h2h' && matchday && (
-            <HeadToHead matchdayId={matchday.id} scores={scores} />
+            <HeadToHead scores={scores} />
+          )}
+
+          {tab === 'chat' && matchday && (
+            <MatchChat matchdayId={matchday.id} />
           )}
 
           {tab === 'subs' && (

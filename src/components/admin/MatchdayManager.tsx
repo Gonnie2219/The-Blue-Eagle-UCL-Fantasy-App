@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { useMatchdayAdmin } from '@/hooks/useAdmin'
-import { fetchUclFixtures, UCL_STAGES, type UclStage } from '@/lib/footballData'
+import { fetchUclFixtures, fetchUclResults, UCL_STAGES, type UclStage } from '@/lib/footballData'
 
 const statusColors: Record<string, string> = {
   upcoming: 'bg-blue-100 text-blue-800',
@@ -34,6 +34,10 @@ export function MatchdayManager() {
   const [importing, setImporting] = useState(false)
   const [importMsg, setImportMsg] = useState('')
 
+  // Sync results state
+  const [syncing, setSyncing] = useState(false)
+  const [syncMsg, setSyncMsg] = useState('')
+
   const toggleExpanded = (mdId: number) => {
     setExpandedMd(expandedMd === mdId ? null : mdId)
     setHomeClub(0)
@@ -42,6 +46,7 @@ export function MatchdayManager() {
     setDayLabel('Tuesday')
     setImportStage('')
     setImportMsg('')
+    setSyncMsg('')
   }
 
   const handleCreate = () => {
@@ -80,6 +85,41 @@ export function MatchdayManager() {
       setImportMsg(`Error: ${err}`)
     }
     setImporting(false)
+  }
+
+  const handleSyncResults = async (mdId: number) => {
+    if (!importStage) return
+    setSyncing(true)
+    setSyncMsg('')
+    try {
+      const { results } = await fetchUclResults(importStage)
+      const mdMatches = matches.filter((m) => m.matchday_id === mdId)
+      let updated = 0
+
+      for (const result of results) {
+        // Match by club short names
+        const match = mdMatches.find((m) => {
+          const homeTla = m.home_club?.short_name?.toUpperCase()
+          const awayTla = m.away_club?.short_name?.toUpperCase()
+          return (
+            (homeTla === result.homeTla.toUpperCase() && awayTla === result.awayTla.toUpperCase()) ||
+            (m.home_club?.short_name === result.homeTeamName && m.away_club?.short_name === result.awayTeamName)
+          )
+        })
+        if (match) {
+          await updateMatch(match.id, {
+            home_score: result.homeScore,
+            away_score: result.awayScore,
+            status: 'finished',
+          })
+          updated++
+        }
+      }
+      setSyncMsg(`Updated ${updated} of ${results.length} finished matches.`)
+    } catch (err) {
+      setSyncMsg(`Error: ${err}`)
+    }
+    setSyncing(false)
   }
 
   if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>
@@ -242,6 +282,22 @@ export function MatchdayManager() {
                     <p className={cn('text-[10px]', importMsg.startsWith('Error') ? 'text-red-600' : 'text-green-600')}>
                       {importMsg}
                     </p>
+                  )}
+                  {importStage && mdMatches.length > 0 && (
+                    <>
+                      <button
+                        onClick={() => handleSyncResults(md.id)}
+                        disabled={syncing}
+                        className="w-full rounded bg-green-600 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+                      >
+                        {syncing ? 'Syncing...' : 'Sync Results (Scores)'}
+                      </button>
+                      {syncMsg && (
+                        <p className={cn('text-[10px]', syncMsg.startsWith('Error') ? 'text-red-600' : 'text-green-600')}>
+                          {syncMsg}
+                        </p>
+                      )}
+                    </>
                   )}
                 </div>
               </div>
