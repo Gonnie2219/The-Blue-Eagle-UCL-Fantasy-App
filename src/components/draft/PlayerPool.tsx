@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { Search, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { posColors } from '@/lib/constants'
@@ -40,8 +40,14 @@ interface PlayerPoolProps {
 }
 
 export function PlayerPool({ players, onPick, canPick, picking }: PlayerPoolProps) {
-  const { openPlayerStats } = usePlayerStats()
+  const { openPlayerStats, setDraftPick } = usePlayerStats()
   const pointsMap = usePlayerPoints()
+
+  // Register draft pick action so the stats modal can show a Pick button
+  useEffect(() => {
+    setDraftPick({ canPick, picking, onPick })
+    return () => setDraftPick(null)
+  }, [canPick, picking, onPick, setDraftPick])
   const { starred, toggle: toggleStar } = useStarredPlayers()
   const [search, setSearch] = useState('')
   const [posFilter, setPosFilter] = useState<PlayerPosition | 'ALL'>('ALL')
@@ -100,11 +106,12 @@ export function PlayerPool({ players, onPick, canPick, picking }: PlayerPoolProp
         {filtered.map((player) => (
           <div
             key={player.id}
-            className="flex items-center justify-between rounded-lg border bg-card px-3 py-2"
+            onClick={() => openPlayerStats(player.id)}
+            className="flex items-center justify-between rounded-lg border bg-card px-3 py-2 cursor-pointer hover:bg-accent/50 transition-colors"
           >
             <div className="flex items-center gap-1 min-w-0">
               <button
-                onClick={() => toggleStar(player.id)}
+                onClick={(e) => { e.stopPropagation(); toggleStar(player.id) }}
                 className="shrink-0 p-0.5"
               >
                 <Star className={cn(
@@ -112,7 +119,7 @@ export function PlayerPool({ players, onPick, canPick, picking }: PlayerPoolProp
                   starred.has(player.id) ? 'fill-yellow-500 text-yellow-500' : 'text-muted-foreground/40'
                 )} />
               </button>
-              <button onClick={() => openPlayerStats(player.id)} className="flex items-center gap-2 min-w-0 text-left">
+              <div className="flex items-center gap-2 min-w-0">
                 <span className={cn(
                   'rounded px-1.5 py-0.5 text-xs font-bold',
                   posColors[player.position],
@@ -123,20 +130,11 @@ export function PlayerPool({ players, onPick, canPick, picking }: PlayerPoolProp
                   <p className="truncate text-sm font-medium">{player.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{player.club?.name}</p>
                 </div>
-              </button>
+              </div>
             </div>
             <span className="shrink-0 text-xs font-bold text-primary tabular-nums">
               {pointsMap.get(player.id) ?? 0}
             </span>
-            {canPick && (
-              <button
-                onClick={() => onPick(player.id)}
-                disabled={picking}
-                className="shrink-0 rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-              >
-                {picking ? '...' : 'Pick'}
-              </button>
-            )}
           </div>
         ))}
         {filtered.length === 0 && (

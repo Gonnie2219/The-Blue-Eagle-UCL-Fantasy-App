@@ -32,7 +32,7 @@ interface PlayerInfo {
 }
 
 export function PlayerStatsModal() {
-  const { selectedPlayerId, close } = usePlayerStats()
+  const { selectedPlayerId, close, draftPick } = usePlayerStats()
   const [player, setPlayer] = useState<PlayerInfo | null>(null)
   const [stats, setStats] = useState<MatchStat[]>([])
   const [loading, setLoading] = useState(false)
@@ -167,6 +167,22 @@ export function PlayerStatsModal() {
             </div>
           )}
         </div>
+
+        {/* Draft pick button */}
+        {draftPick?.canPick && selectedPlayerId && (
+          <div className="border-t px-4 py-3">
+            <button
+              onClick={() => {
+                draftPick.onPick(selectedPlayerId)
+                close()
+              }}
+              disabled={draftPick.picking}
+              className="w-full rounded-lg bg-primary py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+            >
+              {draftPick.picking ? 'Picking...' : `Draft ${player?.name ?? 'Player'}`}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
