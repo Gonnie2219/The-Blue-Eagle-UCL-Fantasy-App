@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { useMatchdayAdmin } from '@/hooks/useAdmin'
+import { fetchUclFixtures } from '@/lib/footballData'
 
 const statusColors: Record<string, string> = {
   upcoming: 'bg-blue-100 text-blue-800',
@@ -28,6 +29,11 @@ export function MatchdayManager() {
   const [matchKickoff, setMatchKickoff] = useState('')
   const [dayLabel, setDayLabel] = useState('Tuesday')
 
+  // Import fixtures state
+  const [importMd, setImportMd] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importMsg, setImportMsg] = useState('')
+
   const toggleExpanded = (mdId: number) => {
     setExpandedMd(expandedMd === mdId ? null : mdId)
     setHomeClub(0)
@@ -50,6 +56,29 @@ export function MatchdayManager() {
     setHomeClub(0)
     setAwayClub(0)
     setMatchKickoff('')
+  }
+
+  const handleImport = async (mdId: number) => {
+    const mdNum = parseInt(importMd)
+    if (!mdNum) return
+    setImporting(true)
+    setImportMsg('')
+    try {
+      const result = await fetchUclFixtures(mdNum)
+      let added = 0
+      for (const m of result.matches) {
+        await addMatch(mdId, m.homeClubId, m.awayClubId, m.kickoffAt, m.dayLabel)
+        added++
+      }
+      const msg = `Imported ${added} matches.`
+      const warn = result.unmapped.length > 0
+        ? ` Unmapped teams: ${result.unmapped.join(', ')}`
+        : ''
+      setImportMsg(msg + warn)
+    } catch (err) {
+      setImportMsg(`Error: ${err}`)
+    }
+    setImporting(false)
   }
 
   if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>
@@ -184,6 +213,33 @@ export function MatchdayManager() {
                   <button onClick={() => handleAddMatch(md.id)} disabled={!homeClub || !awayClub || !matchKickoff} className="w-full rounded bg-primary py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-50">
                     Add Match
                   </button>
+                </div>
+
+                {/* Import from football-data.org */}
+                <div className="space-y-1.5 rounded-md border p-2">
+                  <p className="text-xs font-semibold">Import from football-data.org</p>
+                  <div className="flex gap-1.5">
+                    <input
+                      type="number"
+                      min={1}
+                      placeholder="API matchday #"
+                      value={importMd}
+                      onChange={(e) => setImportMd(e.target.value)}
+                      className="w-full rounded border px-2 py-1 text-xs"
+                    />
+                    <button
+                      onClick={() => handleImport(md.id)}
+                      disabled={importing || !importMd}
+                      className="whitespace-nowrap rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
+                    >
+                      {importing ? 'Importing...' : 'Import'}
+                    </button>
+                  </div>
+                  {importMsg && (
+                    <p className={cn('text-[10px]', importMsg.startsWith('Error') ? 'text-red-600' : 'text-green-600')}>
+                      {importMsg}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
