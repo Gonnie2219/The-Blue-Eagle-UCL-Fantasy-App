@@ -11,6 +11,7 @@ export function useDraft() {
   const [participants, setParticipants] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [picking, setPicking] = useState(false)
+  const [pickError, setPickError] = useState<string | null>(null)
 
   const currentPickerIndex = session
     ? getSnakeIndex(session.current_pick, session.pick_order.length)
@@ -70,6 +71,7 @@ export function useDraft() {
       if (!session || !user || !isMyTurn) return
 
       setPicking(true)
+      setPickError(null)
       const { error } = await supabase.rpc('rpc_make_draft_pick', {
         p_session_id: session.id,
         p_user_id: user.id,
@@ -80,11 +82,14 @@ export function useDraft() {
 
       if (error) {
         console.error('Draft pick failed:', error.message)
+        setPickError(error.message)
+      } else {
+        await loadDraft()
       }
 
       setPicking(false)
     },
-    [session, user, isMyTurn]
+    [session, user, isMyTurn, loadDraft]
   )
 
   // Subscribe to realtime changes
@@ -117,6 +122,7 @@ export function useDraft() {
     participants,
     loading,
     picking,
+    pickError,
     isMyTurn,
     currentPickerUserId,
     currentPickerIndex,

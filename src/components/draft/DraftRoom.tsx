@@ -11,6 +11,7 @@ export function DraftRoom() {
     participants,
     loading,
     picking,
+    pickError,
     isMyTurn,
     currentPickerUserId,
     makePick,
@@ -74,6 +75,13 @@ export function DraftRoom() {
           {session.type === 'waiver' ? 'Waiver Draft' : 'Initial Draft'}
         </p>
       </div>
+
+      {/* Pick error */}
+      {pickError && (
+        <div className="rounded-lg bg-destructive/10 border border-destructive/30 p-3 text-center text-sm text-destructive">
+          Pick failed: {pickError}
+        </div>
+      )}
 
       {/* Participants */}
       <div className="flex gap-1 overflow-x-auto pb-1">

@@ -10,7 +10,6 @@ interface ActivityItem {
   timestamp: string
   description: string
   players: Array<{ id: number; name: string; position: string }>
-  users: string[]
 }
 
 export default function Activity() {
@@ -54,7 +53,6 @@ export default function Activity() {
           timestamp: d.picked_at,
           description: `${d.profile?.display_name} drafted (R${d.round} P${d.pick_number})`,
           players: d.player ? [d.player] : [],
-          users: [d.profile?.display_name ?? ''],
         })
       }
 
@@ -72,7 +70,6 @@ export default function Activity() {
           timestamp: t.resolved_at,
           description: `${t.proposer?.display_name} traded with ${t.receiver?.display_name}`,
           players: playerNames,
-          users: [t.proposer?.display_name ?? '', t.receiver?.display_name ?? ''],
         })
       }
 
@@ -92,7 +89,6 @@ export default function Activity() {
           timestamp: t.transferred_at,
           description: `${t.profile?.display_name} transferred${t.is_free ? '' : ` (-${t.point_cost}pts)`}`,
           players,
-          users: [t.profile?.display_name ?? ''],
         })
       }
 
