@@ -13,6 +13,8 @@ export function SquadManager() {
     toggleStarter,
     setCaptain,
     setViceCaptain,
+    unsetCaptain,
+    unsetViceCaptain,
   } = useSquad()
   const { isLineupLocked } = useDeadlines()
 
@@ -79,6 +81,8 @@ export function SquadManager() {
               onToggleStarter={isLineupLocked ? undefined : () => toggleStarter(sp.id, false)}
               onSetCaptain={isLineupLocked ? undefined : () => setCaptain(sp.id)}
               onSetViceCaptain={isLineupLocked ? undefined : () => setViceCaptain(sp.id)}
+              onUnsetCaptain={isLineupLocked ? undefined : () => unsetCaptain(sp.id)}
+              onUnsetViceCaptain={isLineupLocked ? undefined : () => unsetViceCaptain(sp.id)}
             />
           ))}
         </div>

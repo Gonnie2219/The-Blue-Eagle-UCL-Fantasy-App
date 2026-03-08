@@ -9,6 +9,8 @@ interface PlayerCardProps {
   onToggleStarter?: () => void
   onSetCaptain?: () => void
   onSetViceCaptain?: () => void
+  onUnsetCaptain?: () => void
+  onUnsetViceCaptain?: () => void
   compact?: boolean
 }
 
@@ -17,6 +19,8 @@ export function PlayerCard({
   onToggleStarter,
   onSetCaptain,
   onSetViceCaptain,
+  onUnsetCaptain,
+  onUnsetViceCaptain,
   compact,
 }: PlayerCardProps) {
   const { openPlayerStats } = usePlayerStats()
@@ -60,6 +64,15 @@ export function PlayerCard({
       </button>
 
       <div className="flex shrink-0 gap-1">
+        {onUnsetCaptain && is_starter && is_captain && (
+          <button
+            onClick={onUnsetCaptain}
+            className="rounded p-1 text-primary hover:bg-destructive/10 hover:text-destructive"
+            title="Remove Captain"
+          >
+            <Crown className="h-3.5 w-3.5" />
+          </button>
+        )}
         {onSetCaptain && is_starter && !is_captain && (
           <button
             onClick={onSetCaptain}
@@ -67,6 +80,15 @@ export function PlayerCard({
             title="Set Captain"
           >
             <Crown className="h-3.5 w-3.5" />
+          </button>
+        )}
+        {onUnsetViceCaptain && is_starter && is_vice_captain && (
+          <button
+            onClick={onUnsetViceCaptain}
+            className="rounded p-1 text-primary hover:bg-destructive/10 hover:text-destructive"
+            title="Remove Vice Captain"
+          >
+            <Star className="h-3.5 w-3.5" />
           </button>
         )}
         {onSetViceCaptain && is_starter && !is_vice_captain && (

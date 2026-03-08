@@ -67,6 +67,22 @@ export function useSquad() {
     [user, loadSquad]
   )
 
+  const unsetCaptain = useCallback(
+    async (squadPlayerId: number) => {
+      await supabase.from('squad_players').update({ is_captain: false }).eq('id', squadPlayerId)
+      loadSquad()
+    },
+    [loadSquad]
+  )
+
+  const unsetViceCaptain = useCallback(
+    async (squadPlayerId: number) => {
+      await supabase.from('squad_players').update({ is_vice_captain: false }).eq('id', squadPlayerId)
+      loadSquad()
+    },
+    [loadSquad]
+  )
+
   useEffect(() => {
     loadSquad()
   }, [loadSquad])
@@ -82,6 +98,8 @@ export function useSquad() {
     toggleStarter,
     setCaptain,
     setViceCaptain,
+    unsetCaptain,
+    unsetViceCaptain,
     reload: loadSquad,
   }
 }
