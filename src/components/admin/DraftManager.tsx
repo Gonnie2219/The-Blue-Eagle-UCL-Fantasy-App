@@ -10,10 +10,13 @@ const statusColors: Record<string, string> = {
 }
 
 export function DraftManager() {
-  const { sessions, users, loading, createDraft, updateStatus, deleteDraft } = useDraftAdmin()
+  const { sessions, users, loading, createDraft, updateStatus, renameDraft, deleteDraft } = useDraftAdmin()
   const [showCreate, setShowCreate] = useState(false)
   const [draftType, setDraftType] = useState<'initial' | 'waiver'>('initial')
+  const [draftName, setDraftName] = useState('')
   const [selectedUsers, setSelectedUsers] = useState<string[]>([])
+  const [editingId, setEditingId] = useState<number | null>(null)
+  const [editName, setEditName] = useState('')
 
   const toggleUser = (id: string) => {
     setSelectedUsers((prev) =>
@@ -29,9 +32,10 @@ export function DraftManager() {
       const j = Math.floor(Math.random() * (i + 1))
       ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
-    createDraft(draftType, shuffled)
+    createDraft(draftType, shuffled, undefined, draftName)
     setShowCreate(false)
     setSelectedUsers([])
+    setDraftName('')
   }
 
   if (loading) return <p className="text-sm text-muted-foreground">Loading...</p>
@@ -51,6 +55,16 @@ export function DraftManager() {
       {/* Create form */}
       {showCreate && (
         <div className="space-y-3 rounded-lg border bg-card p-3">
+          <div>
+            <p className="mb-1 text-xs font-semibold">Name</p>
+            <input
+              type="text"
+              value={draftName}
+              onChange={(e) => setDraftName(e.target.value)}
+              placeholder="e.g. Initial Draft #1"
+              className="w-full rounded-md border bg-background px-3 py-1.5 text-sm"
+            />
+          </div>
           <div>
             <p className="mb-1 text-xs font-semibold">Type</p>
             <div className="flex gap-2">
@@ -106,9 +120,34 @@ export function DraftManager() {
           <div key={s.id} className="rounded-lg border bg-card p-3">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">
-                  {s.type === 'initial' ? 'Initial' : 'Waiver'} Draft #{s.id}
-                </span>
+                {editingId === s.id ? (
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      renameDraft(s.id, editName)
+                      setEditingId(null)
+                    }}
+                    className="flex items-center gap-1"
+                  >
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={(e) => setEditName(e.target.value)}
+                      className="w-36 rounded border bg-background px-2 py-0.5 text-sm"
+                      autoFocus
+                      onBlur={() => setEditingId(null)}
+                    />
+                    <button type="submit" className="text-xs text-primary font-medium">Save</button>
+                  </form>
+                ) : (
+                  <span
+                    className="text-sm font-medium cursor-pointer hover:underline"
+                    onClick={() => { setEditingId(s.id); setEditName(s.name || '') }}
+                    title="Click to rename"
+                  >
+                    {s.name || `${s.type === 'initial' ? 'Initial' : 'Waiver'} Draft #${s.id}`}
+                  </span>
+                )}
                 <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-semibold', statusColors[s.status])}>
                   {s.status}
                 </span>

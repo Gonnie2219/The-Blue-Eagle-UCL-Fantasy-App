@@ -35,6 +35,7 @@ export type DraftType = 'initial' | 'waiver'
 
 export interface DraftSession {
   id: number
+  name: string | null
   matchday_id: number | null
   type: DraftType
   status: DraftStatus

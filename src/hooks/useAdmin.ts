@@ -47,12 +47,13 @@ export function useDraftAdmin() {
     setLoading(false)
   }, [])
 
-  const createDraft = useCallback(async (type: 'initial' | 'waiver', pickOrder: string[], matchdayId?: number) => {
+  const createDraft = useCallback(async (type: 'initial' | 'waiver', pickOrder: string[], matchdayId?: number, name?: string) => {
     await supabase.from('draft_sessions').insert({
       type,
       pick_order: pickOrder,
       matchday_id: matchdayId || null,
       status: 'pending',
+      name: name?.trim() || null,
     })
     load()
   }, [load])
@@ -64,6 +65,11 @@ export function useDraftAdmin() {
     load()
   }, [load])
 
+  const renameDraft = useCallback(async (id: number, name: string) => {
+    await supabase.from('draft_sessions').update({ name: name.trim() || null }).eq('id', id)
+    load()
+  }, [load])
+
   const deleteDraft = useCallback(async (id: number) => {
     await supabase.from('draft_picks').delete().eq('draft_session_id', id)
     await supabase.from('draft_sessions').delete().eq('id', id)
@@ -71,7 +77,7 @@ export function useDraftAdmin() {
   }, [load])
 
   useEffect(() => { load() }, [load])
-  return { sessions, users, loading, createDraft, updateStatus, deleteDraft, reload: load }
+  return { sessions, users, loading, createDraft, updateStatus, renameDraft, deleteDraft, reload: load }
 }
 
 // ---- Matchday Management ----
