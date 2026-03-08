@@ -82,8 +82,17 @@ function findClubMatch(
   return null
 }
 
-/** Fetch UCL fixtures for a matchday number and return mapped matches */
-export async function fetchUclFixtures(matchday: number): Promise<{
+export const UCL_STAGES = [
+  { value: 'LAST_16', label: 'Round of 16' },
+  { value: 'QUARTER_FINALS', label: 'Quarter-Finals' },
+  { value: 'SEMI_FINALS', label: 'Semi-Finals' },
+  { value: 'FINAL', label: 'Final' },
+] as const
+
+export type UclStage = (typeof UCL_STAGES)[number]['value']
+
+/** Fetch UCL fixtures for a knockout stage and return mapped matches */
+export async function fetchUclFixtures(stage: UclStage): Promise<{
   matches: Array<{
     homeClubId: number
     awayClubId: number
@@ -95,7 +104,7 @@ export async function fetchUclFixtures(matchday: number): Promise<{
   unmapped: string[]
 }> {
   const data = await fdFetch<FdResponse>(
-    `/competitions/CL/matches?matchday=${matchday}`
+    `/competitions/CL/matches?stage=${stage}`
   )
 
   const { data: clubs } = await supabase

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { useMatchdayAdmin } from '@/hooks/useAdmin'
-import { fetchUclFixtures } from '@/lib/footballData'
+import { fetchUclFixtures, UCL_STAGES, type UclStage } from '@/lib/footballData'
 
 const statusColors: Record<string, string> = {
   upcoming: 'bg-blue-100 text-blue-800',
@@ -30,7 +30,7 @@ export function MatchdayManager() {
   const [dayLabel, setDayLabel] = useState('Tuesday')
 
   // Import fixtures state
-  const [importMd, setImportMd] = useState('')
+  const [importStage, setImportStage] = useState<UclStage | ''>('')
   const [importing, setImporting] = useState(false)
   const [importMsg, setImportMsg] = useState('')
 
@@ -40,6 +40,8 @@ export function MatchdayManager() {
     setAwayClub(0)
     setMatchKickoff('')
     setDayLabel('Tuesday')
+    setImportStage('')
+    setImportMsg('')
   }
 
   const handleCreate = () => {
@@ -59,12 +61,11 @@ export function MatchdayManager() {
   }
 
   const handleImport = async (mdId: number) => {
-    const mdNum = parseInt(importMd)
-    if (!mdNum) return
+    if (!importStage) return
     setImporting(true)
     setImportMsg('')
     try {
-      const result = await fetchUclFixtures(mdNum)
+      const result = await fetchUclFixtures(importStage)
       let added = 0
       for (const m of result.matches) {
         await addMatch(mdId, m.homeClubId, m.awayClubId, m.kickoffAt, m.dayLabel)
@@ -219,17 +220,19 @@ export function MatchdayManager() {
                 <div className="space-y-1.5 rounded-md border p-2">
                   <p className="text-xs font-semibold">Import from football-data.org</p>
                   <div className="flex gap-1.5">
-                    <input
-                      type="number"
-                      min={1}
-                      placeholder="API matchday #"
-                      value={importMd}
-                      onChange={(e) => setImportMd(e.target.value)}
+                    <select
+                      value={importStage}
+                      onChange={(e) => setImportStage(e.target.value as UclStage | '')}
                       className="w-full rounded border px-2 py-1 text-xs"
-                    />
+                    >
+                      <option value="">Select stage...</option>
+                      {UCL_STAGES.map((s) => (
+                        <option key={s.value} value={s.value}>{s.label}</option>
+                      ))}
+                    </select>
                     <button
                       onClick={() => handleImport(md.id)}
-                      disabled={importing || !importMd}
+                      disabled={importing || !importStage}
                       className="whitespace-nowrap rounded bg-blue-600 px-3 py-1 text-xs font-medium text-white disabled:opacity-50"
                     >
                       {importing ? 'Importing...' : 'Import'}
